@@ -20,7 +20,6 @@ export default function ReservationScreen() {
   const [attendedReservations, setAttendedReservations] = useState([]);
 
   const updateReservationStatus = async (reservationID) => {
-    alert('zain')
     //updating reservation status to attended
     const reservationStatus = {
       status: "attended"
