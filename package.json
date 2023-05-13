@@ -1,0 +1,31 @@
+{
+  "name": "hotel-management-system-based-on-hybrid-recommendation-system",
+  "type": "module",
+  "version": "1.0.0",
+  "engines": {
+    "node": "14.19.3"
+  },
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --watch backend --exec node --experimental-modules backend/server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-async-handler": "^1.1.4",
+    "express-fileupload": "^1.2.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.12.3",
+    "node-fetch": "^2.6.1",
+    "node-geocoder": "^3.27.0",
+    "nodemon": "^2.0.22"
+  },
+  "devDependencies": {
+    "eslint": "^7.22.0"
+  }
+}

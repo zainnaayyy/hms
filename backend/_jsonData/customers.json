@@ -1,0 +1,47 @@
+[
+  {
+    "firstName": "Test",
+    "lastName": "Customer",
+    "email": "attockstd@gmail.com",
+    "address": "Some Test Address",
+    "image": "/img/52.jpg",
+    "password": "test123",
+    "zipcode": "43600"
+  },
+  {
+    "firstName": "attock",
+    "lastName": "customer",
+    "email": "attock@gmail.com",
+    "address": "Masjid Aamna Attock Cantt",
+    "image": "/img/11.jpg",
+    "password": "test123",
+    "zipcode": "43600"
+  },
+  {
+    "firstName": "islamabad",
+    "lastName": "customer",
+    "email": "isbcustomer@gmail.com",
+    "address": "F12 Markaz Islamabad",
+    "image": "/img/42.jpg",
+    "password": "test123",
+    "zipcode": "44000"
+  },
+  {
+    "firstName": "peshawar",
+    "lastName": "customer",
+    "email": "peshawarcustomer@gmail.com",
+    "address": "Hayatabad Peshawar cantt",
+    "image": "/img/12.jpg",
+    "password": "test123",
+    "zipcode": "25000"
+  },
+  {
+    "firstName": "swat",
+    "lastName": "customer",
+    "email": "swatcustomer@gmail.com",
+    "address": "Masjid Aamna Attock Cantt",
+    "image": "/img/12.jpg",
+    "password": "test123",
+    "zipcode": "19200"
+  }
+]
