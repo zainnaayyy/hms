@@ -32,7 +32,7 @@ const reservationSchema = new Schema({
   status: {
     type: String,
     required: [true, 'Please provide reservation status'],
-    enum: ['pending', 'attended'],
+    enum: ['pending', 'attended', 'declined'],
     default: "pending"
   },
   hotelID: {

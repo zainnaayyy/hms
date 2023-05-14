@@ -19,10 +19,10 @@ export default function ReservationScreen() {
   const [activeReservations, setActiveReservations] = useState([]);
   const [attendedReservations, setAttendedReservations] = useState([]);
 
-  const updateReservationStatus = async (reservationID) => {
-    //updating reservation status to attended
+  const updateReservationStatus = async (reservationID, isApproved) => {
+    //updating reservation status to attended // declined
     const reservationStatus = {
-      status: "attended"
+      status: isApproved ? "attended" : "declined"
     };
 
     try {
@@ -44,7 +44,7 @@ export default function ReservationScreen() {
           const attendedOnes = [];
           allReservations.forEach((reservation) => {
             //first check if reservation status is simply attended (no need to update the status as the reservation is a past reservation)
-            if (reservation.status === 'attended') {
+            if (reservation.status === 'attended' || reservation.status === "declined") {
               attendedOnes.push(reservation);
             }
             //then check if a reservation is past reservation but status is still pending in the database, then push that reservation into attended ones and also update in the DB:
@@ -86,9 +86,9 @@ export default function ReservationScreen() {
             </Box>
             :
             <>
-              <CollapsibleTable mb={true} type="Active" reservations={activeReservations} />
-              <CollapsibleTable mb={true} type="Upcoming" reservations={pendingReservations} updateRes={(val) => updateReservationStatus(val)}/>
-              <CollapsibleTable mb={false} type="Past" reservations={attendedReservations} />
+              <CollapsibleTable mb={true} type="Active" reservations={activeReservations} updateRes={(val, bool) => updateReservationStatus(val, bool)}/>
+              <CollapsibleTable mb={true} type="Upcoming" reservations={pendingReservations} updateRes={(val, bool) => updateReservationStatus(val, bool)}/>
+              <CollapsibleTable mb={false} type="Past" reservations={attendedReservations} updateRes={(val, bool) => updateReservationStatus(val, bool)}/>
             </>
         }
       </Content>

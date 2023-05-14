@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
@@ -18,6 +18,18 @@ import axios from 'axios';
 import { Button, makeStyles } from '@material-ui/core';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
+import { styled } from '@material-ui/core/styles';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import CloseIcon from '@material-ui/icons/Close';
+import PropTypes from 'prop-types';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { StaticDateTimePicker } from '@mui/x-date-pickers/StaticDateTimePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import { toast } from 'react-toastify';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -25,15 +37,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2),
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1),
+  },
+}));
+
+export interface DialogTitleProps {
+  id: string;
+  children?: React.ReactNode;
+  onClose: () => void;
+}
 
 function Row(props) {
+  const user = JSON.parse(localStorage.getItem('userInfo'));
+  const cat = user.category
   const { root } = useStyles(props);
   const { row, type, updateRes } = props;
-  console.log("zain",row)
+  console.log("zain", row)
   const [open, setOpen] = React.useState(false);
   const [hotelInfo, setHotelInfo] = React.useState(false);
   const [customerInfo, setCustomerInfo] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
+  const [extendedDate, setExtendedDate] = useState(dayjs(new Date()));
 
   const fetchUsersInfo = async (hotelID, customerID) => {
     setOpen(!open);
@@ -49,8 +78,67 @@ function Row(props) {
     }
   };
 
-  const onApprove = () => {
-    updateRes(row._id)
+  function BootstrapDialogTitle(props: DialogTitleProps) {
+    const { children, onClose, ...other } = props;
+  
+    return (
+      <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+        {/* {children} */}
+        {onClose ? (
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        ) : null}
+      </DialogTitle>
+    );
+  }
+
+  const onApprove = (bool) => {
+    updateRes(row._id, bool)
+  }
+
+  const [openModal, setOpenModal] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpenModal(true);
+  };
+  const handleClose = () => {
+    setOpenModal(false);
+  };
+
+  const handleExtend = (id) => {
+    console.log('zain :>> ', extendedDate.format('YYYY-MM-DDTHH:mm:ss'));
+    const eDate = extendedDate.format('YYYY-MM-DDTHH:mm:ss')
+    const reservationDateExtend = {
+      endDate: eDate
+    };
+
+    try {
+      axios.put(`reservations/${id}`, reservationDateExtend).then((response) => {
+        if(response.status === 200) {
+          toast.success("Reservation updated successfully", {
+            position: 'top-right'
+          })
+          handleClose()
+        } else {
+          toast.error("Reservation not updated.", {
+            position: "top-right"
+          })
+          handleClose()
+        }
+      });
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 
   return (
@@ -69,7 +157,9 @@ function Row(props) {
           {row.startDate}
         </TableCell>
         <TableCell align="center">{row.venue.formattedAddress}</TableCell>
-        <TableCell align="center">{type === "Active" ? "Ongoing" : row.status}</TableCell>
+        <TableCell align="center">
+          {type === "Active" ? "Ongoing" : row.status}
+        </TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -85,36 +175,99 @@ function Row(props) {
                     <TableCell>Hotel</TableCell>
                     <TableCell>Hourly Charges</TableCell>
                     <TableCell>Time Left</TableCell>
-                    {type === "Upcoming" && <TableCell>Actions</TableCell>}
+                    {cat != "customers" && <TableCell>Actions</TableCell>}
                   </TableRow>
                 </TableHead>
-                {
-                  loading ?
-                    <Box className="d-flex p-2 justify-content-center align-items-center">
-                      <CircularProgress size={20} />
-                    </Box>
-                    :
-                    <TableBody>
-                      <TableRow>
-                        <TableCell component="th" scope="row">
-                          {customerInfo.firstName} {customerInfo.lastName}
-                        </TableCell>
-                        <TableCell><Link to={{
-                          pathname: "/hotels/profile",
-                          hotelInfo
-                        }} className="text-info">{hotelInfo?.hotelName}</Link></TableCell>
+                {loading ? (
+                  <Box className="d-flex p-2 justify-content-center align-items-center">
+                    <CircularProgress size={20} />
+                  </Box>
+                ) : (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell component="th" scope="row">
+                        {customerInfo.firstName} {customerInfo.lastName}
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          to={{
+                            pathname: "/hotels/profile",
+                            hotelInfo,
+                          }}
+                          className="text-info"
+                        >
+                          {hotelInfo?.hotelName}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        {"$" + hotelInfo.hourlyRate.toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        <Countdown
+                          date={
+                            Date.now() +
+                            moment(
+                              row.startDate,
+                              "MMMM Do YYYY, h:mm:ss A"
+                            ).diff(moment())
+                          }
+                        />
+                      </TableCell>
+                      {cat != "customers" && (
                         <TableCell>
-                          {"$" + hotelInfo.hourlyRate.toFixed(2)}
+                          {row.status === "pending" && (
+                            <>
+                              <Button
+                                className="border border-black bg-success text-white"
+                                onClick={() => onApprove(true)}
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                className="border border-black bg-danger text-white"
+                                onClick={() => onApprove(false)}
+                              >
+                                Decline
+                              </Button>
+                            </>
+                          )}
+                          {row?.status === 'attended' && (
+                            <div>
+                              <Button
+                                className="border border-black bg-primary text-white"
+                                onClick={() => handleClickOpen()}
+                              >
+                                Extend
+                              </Button>
+                              <BootstrapDialog
+                                onClose={handleClose}
+                                aria-labelledby="customized-dialog-title"
+                                open={openModal}
+                              >
+                                <BootstrapDialogTitle
+                                  id="customized-dialog-title"
+                                  onClose={handleClose}
+                                >
+                                  Modal title
+                                </BootstrapDialogTitle>
+                                <DialogContent dividers>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <StaticDateTimePicker value={extendedDate} disablePast onChange={(val) => {setExtendedDate(val)}} defaultValue={dayjs(new Date())} />
+                                </LocalizationProvider>
+                                </DialogContent>
+                                <DialogActions>
+                                  <Button autoFocus onClick={() => handleExtend(row?._id)}>
+                                    Save
+                                  </Button>
+                                </DialogActions>
+                              </BootstrapDialog>
+                            </div>
+                          )}
                         </TableCell>
-                        <TableCell>
-                          <Countdown date={Date.now() + moment(row.startDate, "MMMM Do YYYY, h:mm:ss A").diff(moment())} />
-                        </TableCell>
-                        {type === "Upcoming" && <TableCell>
-                          <Button className="border border-black bg-primary text-white" onClick={() => onApprove()}>Approve</Button>
-                        </TableCell>}
-                      </TableRow>
-                    </TableBody>
-                }
+                      )}
+                    </TableRow>
+                  </TableBody>
+                )}
               </Table>
             </Box>
           </Collapse>
@@ -142,8 +295,8 @@ export default function CollapsibleTable({ reservations, type, mb, updateRes }) 
               </TableHead>
               <TableBody>
                 {reservations.map((reservation) => (
-                  <Row key={reservation._id} row={reservation} type={type} updateRes={(id) => {
-                    updateRes && updateRes(id)
+                  <Row key={reservation._id} row={reservation} type={type} updateRes={(id, bool) => {
+                    updateRes && updateRes(id, bool)
                   }} />
                 ))}
               </TableBody>
